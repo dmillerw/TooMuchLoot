@@ -68,11 +68,11 @@ public class TooMuchLoot {
 	}
 
 	public static void warn(String msg, boolean big) {
-		if (big) FMLLog.bigWarning("[dmillerw.tml.TooMuchLoot]: %s", msg); else FMLLog.warning("[dmillerw.tml.TooMuchLoot]: %s", msg);
+		if (big) FMLLog.bigWarning("[TooMuchLoot]: %s", msg); else FMLLog.warning("[TooMuchLoot]: %s", msg);
 	}
 
 	public static void logRemoval(String key, String display) {
-		if (log) FMLLog.info("[dmillerw.tml.TooMuchLoot]: Removed %s from %s", display, key);
+		if (log) FMLLog.info("[TooMuchLoot]: Removed %s from %s", display, key);
 	}
 
 	public static File configFolder;
