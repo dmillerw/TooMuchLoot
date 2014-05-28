@@ -2,8 +2,8 @@ package dmillerw.tml;
 
 import cpw.mods.fml.common.FMLLog;
 import cpw.mods.fml.common.Mod;
-import cpw.mods.fml.common.event.FMLLoadCompleteEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
+import cpw.mods.fml.common.event.FMLServerAboutToStartEvent;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.WeightedRandomChestContent;
 import net.minecraftforge.common.ChestGenHooks;
@@ -105,7 +105,7 @@ public class TooMuchLoot {
 	}
 
 	@Mod.EventHandler
-	public void onLoadingComplete(FMLLoadCompleteEvent event) {
+	public void onServerStarting(FMLServerAboutToStartEvent event) {
 		if (failed) {
 			return;
 		}
