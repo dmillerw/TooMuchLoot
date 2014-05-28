@@ -1,20 +1,15 @@
 package dmillerw.tml;
 
-import com.google.gson.GsonBuilder;
 import cpw.mods.fml.common.FMLLog;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.event.FMLLoadCompleteEvent;
-import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
-import cpw.mods.fml.common.registry.GameRegistry;
-import dmillerw.tml.json.LootDeserielizer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.WeightedRandomChestContent;
 import net.minecraftforge.common.ChestGenHooks;
-import net.minecraftforge.common.config.Configuration;
+import net.minecraftforge.common.Configuration;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
@@ -67,8 +62,8 @@ public class TooMuchLoot {
 		return configuration.get(category, getFormattedStackString(stack), true, stack.getDisplayName()).getBoolean(true);
 	}
 
-	public static void warn(String msg, boolean big) {
-		if (big) FMLLog.bigWarning("[TooMuchLoot]: %s", msg); else FMLLog.warning("[TooMuchLoot]: %s", msg);
+	public static void warn(String msg) {
+		FMLLog.warning("[TooMuchLoot]: %s", msg);
 	}
 
 	public static void logRemoval(String key, String display) {
@@ -104,7 +99,7 @@ public class TooMuchLoot {
 			contents.setAccessible(true);
 		} catch (NoSuchFieldException e) {
 			failed = true;
-			warn("Failed to obtain contents field. This mod will now cease to function.", true);
+			warn("Failed to obtain contents field. This mod will now cease to function.");
 			e.printStackTrace();
 		}
 	}
@@ -133,7 +128,7 @@ public class TooMuchLoot {
 					}
 				}
 			} catch (IllegalAccessException e) {
-				warn("Failed to obtain loot for [" + getFormattedKey(key) + "]", false);
+				warn("Failed to obtain loot for [" + getFormattedKey(key) + "]");
 				e.printStackTrace();
 			}
 

@@ -50,11 +50,11 @@ public class NBTDeserializer implements JsonDeserializer<NBTTagCompound> {
 
 	public NBTBase getTagFromPrimitive(JsonPrimitive primitive) {
 		if (primitive.isBoolean()) {
-			return new NBTTagByte((byte) (primitive.getAsBoolean() ? 1 : 0));
+			return new NBTTagByte("", (byte) (primitive.getAsBoolean() ? 1 : 0));
 		} else if (primitive.isNumber()) {
-			return new NBTTagInt(primitive.getAsNumber().intValue());
+			return new NBTTagInt("", primitive.getAsNumber().intValue());
 		} else if (primitive.isString()) {
-			return new NBTTagString(primitive.getAsString());
+			return new NBTTagString("", primitive.getAsString());
 		} else {
 			throw new JsonParseException("Failed to retrieve NBT tag from non-primitive element!");
 		}
@@ -64,19 +64,19 @@ public class NBTDeserializer implements JsonDeserializer<NBTTagCompound> {
 		if (type.equalsIgnoreCase("string")) {
 			return new NBTTagString(element.getAsString());
 		} else if (type.equalsIgnoreCase("byte")) {
-			return new NBTTagByte(element.getAsByte());
+			return new NBTTagByte("", element.getAsByte());
 		} else if (type.equalsIgnoreCase("bool") || type.equalsIgnoreCase("boolean")) {
-			return new NBTTagByte((byte) (element.getAsBoolean() ? 1 : 0));
+			return new NBTTagByte("", (byte) (element.getAsBoolean() ? 1 : 0));
 		} else if (type.equalsIgnoreCase("short")) {
-			return new NBTTagShort(element.getAsShort());
+			return new NBTTagShort("", element.getAsShort());
 		} else if (type.equalsIgnoreCase("int") || type.equalsIgnoreCase("integer")) {
-			return new NBTTagInt(element.getAsInt());
+			return new NBTTagInt("", element.getAsInt());
 		} else if (type.equalsIgnoreCase("float")) {
-			return new NBTTagFloat(element.getAsFloat());
+			return new NBTTagFloat("", element.getAsFloat());
 		} else if (type.equalsIgnoreCase("double")) {
-			return new NBTTagDouble(element.getAsDouble());
+			return new NBTTagDouble("", element.getAsDouble());
 		} else if (type.equalsIgnoreCase("long")) {
-			return new NBTTagLong(element.getAsLong());
+			return new NBTTagLong("", element.getAsLong());
 		} else {
 			return null;
 		}
