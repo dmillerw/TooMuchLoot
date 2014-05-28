@@ -35,8 +35,8 @@ minecraft {
 
 version = "${config.minecraft_version}-${config.mod_version}"
 
-if (System.getenv("DRONE")) {
-    version = version + "-b" + System.getenv("BUILD_ID");
+if (System.getenv("JENKINS")) {
+    version = version + "-b" + System.getenv("BUILD_NUMBER");
 }
 
 processResources {
