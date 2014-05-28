@@ -6,6 +6,7 @@ import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.event.FMLLoadCompleteEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
+import cpw.mods.fml.common.event.FMLServerAboutToStartEvent;
 import cpw.mods.fml.common.registry.GameRegistry;
 import dmillerw.tml.json.LootDeserielizer;
 import net.minecraft.item.ItemStack;
@@ -110,7 +111,7 @@ public class TooMuchLoot {
 	}
 
 	@Mod.EventHandler
-	public void onLoadingComplete(FMLLoadCompleteEvent event) {
+	public void onServerStarting(FMLServerAboutToStartEvent event) {
 		if (failed) {
 			return;
 		}
