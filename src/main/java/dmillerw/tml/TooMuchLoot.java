@@ -38,6 +38,7 @@ public class TooMuchLoot {
 		ChestGenHooks.STRONGHOLD_CORRIDOR,
 		ChestGenHooks.STRONGHOLD_LIBRARY,
 		ChestGenHooks.STRONGHOLD_CROSSING,
+		ChestGenHooks.VILLAGE_BLACKSMITH,
 		ChestGenHooks.BONUS_CHEST,
 		ChestGenHooks.DUNGEON_CHEST
 	};
