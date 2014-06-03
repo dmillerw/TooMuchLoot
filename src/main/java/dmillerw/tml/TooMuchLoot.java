@@ -8,7 +8,7 @@ import dmillerw.tml.wrapper.ConfigWrapper;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.WeightedRandomChestContent;
 import net.minecraftforge.common.ChestGenHooks;
-import net.minecraftforge.common.config.Configuration;
+import net.minecraftforge.common.Configuration;
 
 import java.io.File;
 import java.lang.reflect.Field;
@@ -65,8 +65,8 @@ public class TooMuchLoot {
 		return configuration.get(category, getFormattedStackString(stack), true, stack.getDisplayName()).getBoolean(true);
 	}
 
-	public static void warn(String msg, boolean big) {
-		if (big) FMLLog.bigWarning("[TooMuchLoot]: %s", msg); else FMLLog.warning("[TooMuchLoot]: %s", msg);
+	public static void warn(String msg) {
+		FMLLog.warning("[TooMuchLoot]: %s", msg);
 	}
 
 	public static void logModification(String key, String display) {
@@ -106,7 +106,7 @@ public class TooMuchLoot {
 			contents.setAccessible(true);
 		} catch (NoSuchFieldException e) {
 			failed = true;
-			warn("Failed to obtain contents field. This mod will now cease to function.", true);
+			warn("Failed to obtain contents field. This mod will now cease to function.");
 			e.printStackTrace();
 		}
 	}
