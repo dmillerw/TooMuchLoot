@@ -4,10 +4,11 @@ import cpw.mods.fml.common.FMLLog;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerAboutToStartEvent;
+import dmillerw.tml.wrapper.ConfigWrapper;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.WeightedRandomChestContent;
 import net.minecraftforge.common.ChestGenHooks;
-import net.minecraftforge.common.Configuration;
+import net.minecraftforge.common.config.Configuration;
 
 import java.io.File;
 import java.lang.reflect.Field;
@@ -22,6 +23,7 @@ public class TooMuchLoot {
 
 	public static final String CONFIG_FOLDER = "TooMuchLoot";
 	public static final String CONFIG_FILE = "MainConfig.cfg";
+	public static final String GEN_FOLDER = "gen";
 	public static final String LOOT_FOLDER = "loot";
 
 	public static String[] CHEST_GEN_KEYS = new String[] {
@@ -63,8 +65,12 @@ public class TooMuchLoot {
 		return configuration.get(category, getFormattedStackString(stack), true, stack.getDisplayName()).getBoolean(true);
 	}
 
-	public static void warn(String msg) {
-		FMLLog.warning("[TooMuchLoot]: %s", msg);
+	public static void warn(String msg, boolean big) {
+		if (big) FMLLog.bigWarning("[TooMuchLoot]: %s", msg); else FMLLog.warning("[TooMuchLoot]: %s", msg);
+	}
+
+	public static void logModification(String key, String display) {
+		if (log) FMLLog.info("[TooMuchLoot]: %s from %s has been modified", display, key);
 	}
 
 	public static void logRemoval(String key, String display) {
@@ -89,7 +95,7 @@ public class TooMuchLoot {
 		Configuration configuration = new Configuration(configFile);
 		configuration.load();
 
-		log = configuration.get("_main", "log_removal", true, "Whether loot removals should be printed to the console/logged").getBoolean(true);
+		log = configuration.get("_main", "log_removal", true, "Whether loot removals/modifications should be printed to the console/logged").getBoolean(true);
 
 		if (configuration.hasChanged()) {
 			configuration.save();
@@ -100,7 +106,7 @@ public class TooMuchLoot {
 			contents.setAccessible(true);
 		} catch (NoSuchFieldException e) {
 			failed = true;
-			warn("Failed to obtain contents field. This mod will now cease to function.");
+			warn("Failed to obtain contents field. This mod will now cease to function.", true);
 			e.printStackTrace();
 		}
 	}
@@ -111,36 +117,53 @@ public class TooMuchLoot {
 			return;
 		}
 
-		Configuration configuration = new Configuration(configFile);
-		configuration.load();
+		Configuration legacyConfig = new Configuration(configFile);
+		legacyConfig.load();
 
 		for (String key : CHEST_GEN_KEYS) {
+			File file = new File(configFolder, GEN_FOLDER + "/" + key + ".cfg");
+			boolean legacy = configFile.exists() && !file.exists();
 			ChestGenHooks chestInfo = ChestGenHooks.getInfo(key);
-			List<ItemStack> toRemove = new ArrayList<ItemStack>();
+
+			if (legacy) {
+				FMLLog.info("Restoring " + key + " data from legacy config");
+			}
+
+			Configuration configuration = new Configuration(file);
+			configuration.load();
+
+			List<ConfigWrapper> newGen = new ArrayList<ConfigWrapper>();
 
 			try {
-				List<WeightedRandomChestContent> contents = (List<WeightedRandomChestContent>) TooMuchLoot.contents.get(chestInfo);
-				for (WeightedRandomChestContent content : contents) {
-					ItemStack stack = content.theItemId;
-
-					if (!isLootAllowed(configuration, key, stack)) {
-						logRemoval(getFormattedKey(key), stack.getDisplayName());
-						toRemove.add(stack);
+				List<WeightedRandomChestContent> chestContents = (List<WeightedRandomChestContent>) contents.get(chestInfo);
+				for (WeightedRandomChestContent content : chestContents) {
+					boolean defaultValue = true;
+					if (legacy) {
+						defaultValue = legacyConfig.get(key, getFormattedStackString(content.theItemId), true).getBoolean(true);
 					}
+
+					ConfigWrapper wrapper = ConfigWrapper.fromConfig(configuration, chestInfo, content, defaultValue);
+					newGen.add(wrapper);
 				}
 			} catch (IllegalAccessException e) {
-				warn("Failed to obtain loot for [" + getFormattedKey(key) + "]");
 				e.printStackTrace();
 			}
 
-			for (ItemStack stack : toRemove) {
-				ChestGenHooks.removeItem(key, stack);
+			for (ConfigWrapper wrapper : newGen) {
+				chestInfo.removeItem(wrapper.item.theItemId);
+				if (wrapper.enabled) {
+					if (wrapper.modified ) {
+						logModification(key, wrapper.item.theItemId.getDisplayName());
+					}
+					chestInfo.addItem(wrapper.item);
+				} else {
+					logRemoval(key, wrapper.item.theItemId.getDisplayName());
+				}
+			}
+
+			if (configuration.hasChanged()) {
+				configuration.save();
 			}
 		}
-
-		if (configuration.hasChanged()) {
-			configuration.save();
-		}
 	}
-
 }
