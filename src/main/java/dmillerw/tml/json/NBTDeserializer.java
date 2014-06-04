@@ -36,6 +36,14 @@ public class NBTDeserializer implements JsonDeserializer<NBTTagCompound> {
 			}
 		} else if (element.isJsonArray()) {
 			// Type is NBT array (int or string?)
+			if (key.contains(":")) {
+				String type = key.substring(0, key.indexOf(":"));
+				String name = key.substring(key.indexOf(":") + 1, key.length());
+				nbt.setTag(name, getArrayFromElement(type, element.getAsJsonArray()));
+			} else {
+				// Type isn't defined, and because I'm lazy, we fail
+				//TODO Fail
+			}
 		} else if (element.isJsonObject()) {
 			// Type is NBT compound
 			NBTTagCompound tag = new NBTTagCompound();
@@ -58,6 +66,14 @@ public class NBTDeserializer implements JsonDeserializer<NBTTagCompound> {
 		} else {
 			throw new JsonParseException("Failed to retrieve NBT tag from non-primitive element!");
 		}
+	}
+
+	public NBTBase getArrayFromElement(String type, JsonArray array) {
+		NBTTagList list = new NBTTagList();
+		for (int i=0; i<array.size(); i++) {
+			list.appendTag(getForcedTagFromElement(type, array.get(i)));
+		}
+		return list;
 	}
 
 	public NBTBase getForcedTagFromElement(String type, JsonElement element) {
