@@ -101,7 +101,7 @@ public class TooMuchLoot {
 		Configuration configuration = new Configuration(configFile);
 		configuration.load();
 
-		log = configuration.get("_main", "log_removal", true, "Whether loot removals/modifications should be printed to the console/logged").getBoolean(true);
+		log = configuration.get("main", "log", true, "Whether loot removals/modifications/additions should be printed to the console/logged").getBoolean(true);
 
 		if (configuration.hasChanged()) {
 			configuration.save();
