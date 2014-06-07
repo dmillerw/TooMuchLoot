@@ -2,8 +2,10 @@ package dmillerw.tml;
 
 import cpw.mods.fml.common.FMLLog;
 import cpw.mods.fml.common.Mod;
+import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerAboutToStartEvent;
+import dmillerw.tml.json.LootDeserielizer;
 import dmillerw.tml.wrapper.ConfigWrapper;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.WeightedRandomChestContent;
@@ -11,6 +13,7 @@ import net.minecraftforge.common.ChestGenHooks;
 import net.minecraftforge.common.Configuration;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,16 +30,16 @@ public class TooMuchLoot {
 	public static final String LOOT_FOLDER = "loot";
 
 	public static String[] CHEST_GEN_KEYS = new String[] {
-		ChestGenHooks.MINESHAFT_CORRIDOR,
-		ChestGenHooks.PYRAMID_DESERT_CHEST,
-		ChestGenHooks.PYRAMID_JUNGLE_CHEST,
-		ChestGenHooks.PYRAMID_JUNGLE_DISPENSER,
-		ChestGenHooks.STRONGHOLD_CORRIDOR,
-		ChestGenHooks.STRONGHOLD_LIBRARY,
-		ChestGenHooks.STRONGHOLD_CROSSING,
-		ChestGenHooks.VILLAGE_BLACKSMITH,
-		ChestGenHooks.BONUS_CHEST,
-		ChestGenHooks.DUNGEON_CHEST
+			ChestGenHooks.MINESHAFT_CORRIDOR,
+			ChestGenHooks.PYRAMID_DESERT_CHEST,
+			ChestGenHooks.PYRAMID_JUNGLE_CHEST,
+			ChestGenHooks.PYRAMID_JUNGLE_DISPENSER,
+			ChestGenHooks.STRONGHOLD_CORRIDOR,
+			ChestGenHooks.STRONGHOLD_LIBRARY,
+			ChestGenHooks.STRONGHOLD_CROSSING,
+			ChestGenHooks.VILLAGE_BLACKSMITH,
+			ChestGenHooks.BONUS_CHEST,
+			ChestGenHooks.DUNGEON_CHEST
 	};
 
 	public static String getFormattedKey(String key) {
@@ -60,13 +63,16 @@ public class TooMuchLoot {
 		return stack.getUnlocalizedName() + ";" + stack.getItemDamage();
 	}
 
-	public static boolean isLootAllowed(Configuration configuration, String category, ItemStack stack) {
-		if (stack == null) return true; // Doesn't get processed, won't throw any errors
-		return configuration.get(category, getFormattedStackString(stack), true, stack.getDisplayName()).getBoolean(true);
+	public static void warn(String msg, boolean big) {
+		FMLLog.warning("[TooMuchLoot]: %s", msg);
 	}
 
-	public static void warn(String msg) {
-		FMLLog.warning("[TooMuchLoot]: %s", msg);
+	public static void logParse(String file) {
+		if (log) FMLLog.info("[TooMuchLoot]: Parsing %s", file);
+	}
+
+	public static void logAddition(String key, String display) {
+		if (log) FMLLog.info("[TooMuchLoot]: Adding %s to %s", display, key);
 	}
 
 	public static void logModification(String key, String display) {
@@ -95,7 +101,7 @@ public class TooMuchLoot {
 		Configuration configuration = new Configuration(configFile);
 		configuration.load();
 
-		log = configuration.get("_main", "log_removal", true, "Whether loot removals/modifications should be printed to the console/logged").getBoolean(true);
+		log = configuration.get("main", "log", true, "Whether loot removals/modifications/additions should be printed to the console/logged").getBoolean(true);
 
 		if (configuration.hasChanged()) {
 			configuration.save();
@@ -106,8 +112,29 @@ public class TooMuchLoot {
 			contents.setAccessible(true);
 		} catch (NoSuchFieldException e) {
 			failed = true;
-			warn("Failed to obtain contents field. This mod will now cease to function.");
+			warn("Failed to obtain contents field. This mod will now cease to function.", true);
 			e.printStackTrace();
+		}
+	}
+
+	@Mod.EventHandler
+	public void postInit(FMLPostInitializationEvent event) {
+		File loot = new File(configFolder, LOOT_FOLDER);
+
+		if (!loot.exists()) {
+			loot.mkdir();
+		}
+
+		for (File file : loot.listFiles()) {
+			String name = file.getName();
+			if (name.substring(name.lastIndexOf(".") + 1, name.length()).equalsIgnoreCase("json")) {
+				try {
+					logParse(name);
+					LootDeserielizer.loadLoot(LootDeserielizer.loadFile(file));
+				} catch (FileNotFoundException e) {
+					e.printStackTrace();
+				}
+			}
 		}
 	}
 
