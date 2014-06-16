@@ -7,7 +7,6 @@ import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerAboutToStartEvent;
 import dmillerw.tml.json.LootDeserielizer;
 import dmillerw.tml.wrapper.ConfigWrapper;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.WeightedRandomChestContent;
 import net.minecraftforge.common.ChestGenHooks;
@@ -58,7 +57,7 @@ public class TooMuchLoot {
 	}
 
 	public static String getFormattedStackString(ItemStack stack) {
-		if (stack == null || Item.itemsList[stack.itemID] == null) {
+		if (stack == null) {
 			return "null";
 		}
 		return stack.getUnlocalizedName() + ";" + stack.getItemDamage();
@@ -131,7 +130,10 @@ public class TooMuchLoot {
 			if (name.substring(name.lastIndexOf(".") + 1, name.length()).equalsIgnoreCase("json")) {
 				try {
 					logParse(name);
-					LootDeserielizer.loadLoot(LootDeserielizer.loadFile(file));
+					LootDeserielizer.SerializedLoot serializedLoot = LootDeserielizer.loadFile(file);
+					if (serializedLoot != null) {
+						LootDeserielizer.loadLoot(serializedLoot);
+					}
 				} catch (FileNotFoundException e) {
 					e.printStackTrace();
 				}
@@ -165,13 +167,18 @@ public class TooMuchLoot {
 			try {
 				List<WeightedRandomChestContent> chestContents = (List<WeightedRandomChestContent>) contents.get(chestInfo);
 				for (WeightedRandomChestContent content : chestContents) {
-					boolean defaultValue = true;
-					if (legacy) {
-						defaultValue = legacyConfig.get(key, getFormattedStackString(content.theItemId), true).getBoolean(true);
-					}
+					try {
+						boolean defaultValue = true;
+						if (legacy) {
+							defaultValue = legacyConfig.get(key, getFormattedStackString(content.theItemId), true).getBoolean(true);
+						}
 
-					ConfigWrapper wrapper = ConfigWrapper.fromConfig(configuration, chestInfo, content, defaultValue);
-					newGen.add(wrapper);
+						ConfigWrapper wrapper = ConfigWrapper.fromConfig(configuration, chestInfo, content, defaultValue);
+						newGen.add(wrapper);
+					} catch (Exception ex) {
+						warn("Failed to handle a specified loot value. REPORT THIS TO THE MOD AUTHOR ALONG WITH THE STACK TRACE FOUND BELOW!", false);
+						ex.printStackTrace();
+					}
 				}
 			} catch (IllegalAccessException e) {
 				e.printStackTrace();
