@@ -54,7 +54,11 @@ public class LootDeserielizer {
 		SerializedLoot loot = gson.fromJson(new FileReader(file), SerializedLoot.class);
 		byte result = loot.verify();
 		if (result != 0) {
-			TooMuchLoot.warn("Failed to parse " + file.getName() + ". Reason: " + (String.format(SerializedLoot.MESSAGES[result])), false);
+			String error = SerializedLoot.MESSAGES[result];
+			if (result == 2) {
+				error = String.format(error, loot.item);
+			}
+			TooMuchLoot.warn("Failed to parse " + file.getName() + ". Reason: " + error, false);
 			return null;
 		} else {
 			return loot;
