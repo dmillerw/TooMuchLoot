@@ -66,6 +66,6 @@ task deobfJar(type: Jar) {
 }
 
 artifacts {
-    archives sourceZip
-    archives deobfJar
+//    archives sourceZip
+//    archives deobfJar
 }
