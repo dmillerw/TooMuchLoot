@@ -7,6 +7,7 @@ import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerAboutToStartEvent;
 import dmillerw.tml.json.LootDeserielizer;
 import dmillerw.tml.wrapper.ConfigWrapper;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.WeightedRandomChestContent;
 import net.minecraftforge.common.ChestGenHooks;
@@ -57,7 +58,7 @@ public class TooMuchLoot {
 	}
 
 	public static String getFormattedStackString(ItemStack stack) {
-		if (stack == null) {
+		if (stack == null || Item.itemsList[stack.itemID] == null) {
 			return "null";
 		}
 		return stack.getUnlocalizedName() + ";" + stack.getItemDamage();
