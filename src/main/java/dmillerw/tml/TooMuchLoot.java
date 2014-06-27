@@ -1,27 +1,28 @@
 package dmillerw.tml;
 
+import cpw.mods.fml.client.event.ConfigChangedEvent;
+import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.FMLLog;
 import cpw.mods.fml.common.Mod;
+import cpw.mods.fml.common.ModMetadata;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerAboutToStartEvent;
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import dmillerw.tml.config.ConfigHandler;
 import dmillerw.tml.json.LootDeserielizer;
-import dmillerw.tml.wrapper.ConfigWrapper;
+import dmillerw.tml.lib.ModInfo;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.WeightedRandomChestContent;
 import net.minecraftforge.common.ChestGenHooks;
-import net.minecraftforge.common.config.Configuration;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @author dmillerw
  */
-@Mod(modid="TML", name="Too Much Loot", version="@VERSION@")
+@Mod(modid= ModInfo.ID, name = ModInfo.NAME, version = ModInfo.VERSION, dependencies = ModInfo.DEPENDENCIES, guiFactory = "dmillerw.tml.client.config.ConfigGUIFactory")
 public class TooMuchLoot {
 
 	public static final String CONFIG_FOLDER = "TooMuchLoot";
@@ -41,20 +42,6 @@ public class TooMuchLoot {
 		ChestGenHooks.BONUS_CHEST,
 		ChestGenHooks.DUNGEON_CHEST
 	};
-
-	public static String getFormattedKey(String key) {
-		StringBuilder sb = new StringBuilder();
-		sb.append(Character.toUpperCase(key.charAt(0)));
-		for (int i=1; i<key.length(); i++) {
-			sb.append(key.charAt(i));
-			if (i < key.length() - 1) {
-				if (Character.isLowerCase(key.charAt(i)) && Character.isUpperCase(key.charAt(i + 1))) {
-					sb.append(' ');
-				}
-			}
-		}
-		return sb.toString();
-	}
 
 	public static String getFormattedStackString(ItemStack stack) {
 		if (stack == null) {
@@ -83,8 +70,10 @@ public class TooMuchLoot {
 		if (log) FMLLog.info("[TooMuchLoot]: Removed %s from %s", display, key);
 	}
 
+	@Mod.Instance(ModInfo.ID)
+	public static TooMuchLoot instance;
+
 	public static File configFolder;
-	public static File configFile;
 	public static File lootFolder;
 
 	public static Field contents;
@@ -94,18 +83,17 @@ public class TooMuchLoot {
 
 	@Mod.EventHandler
 	public void preInit(FMLPreInitializationEvent event) {
+		// MOD METADATA ADJUSTMENT
+		ModMetadata modMetadata = event.getModMetadata();
+		modMetadata.version = ModInfo.VERSION;
+
 		configFolder = new File(event.getModConfigurationDirectory(), CONFIG_FOLDER);
-		configFile = new File(configFolder, CONFIG_FILE);
 		lootFolder = new File(configFolder, LOOT_FOLDER);
 
-		Configuration configuration = new Configuration(configFile);
-		configuration.load();
+		ConfigHandler.configFile = new File(configFolder, CONFIG_FILE);
 
-		log = configuration.get("main", "log", true, "Whether loot removals/modifications/additions should be printed to the console/logged").getBoolean(true);
-
-		if (configuration.hasChanged()) {
-			configuration.save();
-		}
+		ConfigHandler.initializeMain();
+		ConfigHandler.syncMain();
 
 		try {
 			contents = ChestGenHooks.class.getDeclaredField("contents");
@@ -115,6 +103,8 @@ public class TooMuchLoot {
 			warn("Failed to obtain contents field. This mod will now cease to function.", true);
 			e.printStackTrace();
 		}
+
+		FMLCommonHandler.instance().bus().register(instance);
 	}
 
 	@Mod.EventHandler
@@ -136,6 +126,8 @@ public class TooMuchLoot {
 				}
 			}
 		}
+
+		ConfigHandler.initializeLoot();
 	}
 
 	@Mod.EventHandler
@@ -144,53 +136,14 @@ public class TooMuchLoot {
 			return;
 		}
 
-		Configuration legacyConfig = new Configuration(configFile);
-		legacyConfig.load();
+		ConfigHandler.syncLoot();
+	}
 
-		for (String key : CHEST_GEN_KEYS) {
-			File file = new File(configFolder, GEN_FOLDER + "/" + key + ".cfg");
-			boolean legacy = configFile.exists() && !file.exists();
-			ChestGenHooks chestInfo = ChestGenHooks.getInfo(key);
-
-			if (legacy) {
-				FMLLog.info("Restoring " + key + " data from legacy config");
-			}
-
-			Configuration configuration = new Configuration(file);
-			configuration.load();
-
-			List<ConfigWrapper> newGen = new ArrayList<ConfigWrapper>();
-
-			try {
-				List<WeightedRandomChestContent> chestContents = (List<WeightedRandomChestContent>) contents.get(chestInfo);
-				for (WeightedRandomChestContent content : chestContents) {
-					boolean defaultValue = true;
-					if (legacy) {
-						defaultValue = legacyConfig.get(key, getFormattedStackString(content.theItemId), true).getBoolean(true);
-					}
-
-					ConfigWrapper wrapper = ConfigWrapper.fromConfig(configuration, chestInfo, content, defaultValue);
-					newGen.add(wrapper);
-				}
-			} catch (IllegalAccessException e) {
-				e.printStackTrace();
-			}
-
-			for (ConfigWrapper wrapper : newGen) {
-				chestInfo.removeItem(wrapper.item.theItemId);
-				if (wrapper.enabled) {
-					if (wrapper.modified ) {
-						logModification(key, wrapper.item.theItemId.getDisplayName());
-					}
-					chestInfo.addItem(wrapper.item);
-				} else {
-					logRemoval(key, wrapper.item.theItemId.getDisplayName());
-				}
-			}
-
-			if (configuration.hasChanged()) {
-				configuration.save();
-			}
+	@SubscribeEvent
+	public void onConfigChanged(ConfigChangedEvent.OnConfigChangedEvent event) {
+		if (event.modID.equalsIgnoreCase(ModInfo.ID)) {
+			ConfigHandler.syncMain();
+			ConfigHandler.syncLoot();
 		}
 	}
 }
