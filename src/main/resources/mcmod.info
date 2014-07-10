@@ -1,0 +1,13 @@
+[
+{
+  "modid": "TooMuchLoot",
+  "name": "TooMuchLoot",
+  "description": "Making dungeon loot rare again...",
+  "version": "${mod_version}",
+  "mcversion": "${minecraft_version}",
+  "authors": [ "dmillerw" ],
+  "dependencies": [
+     "mod_MinecraftForge"
+  ]
+}
+]
