@@ -1,15 +1,12 @@
 package dmillerw.tml;
 
-import cpw.mods.fml.client.event.ConfigChangedEvent;
-import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerAboutToStartEvent;
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import dmillerw.tml.config.ConfigHandler;
-import dmillerw.tml.helper.LogHelper;
 import dmillerw.tml.data.LootLoader;
+import dmillerw.tml.helper.LogHelper;
 import dmillerw.tml.lib.ModInfo;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.ChestGenHooks;
@@ -20,7 +17,7 @@ import java.lang.reflect.Field;
 /**
  * @author dmillerw
  */
-@Mod(modid= ModInfo.ID, name = ModInfo.NAME, version = ModInfo.VERSION, dependencies = ModInfo.DEPENDENCIES, guiFactory = "dmillerw.tml.client.config.ConfigGUIFactory")
+@Mod(modid= ModInfo.ID, name = ModInfo.NAME, version = ModInfo.VERSION, dependencies = ModInfo.DEPENDENCIES)
 public class TooMuchLoot {
 
 	public static final String CONFIG_FOLDER = "TooMuchLoot";
@@ -76,8 +73,6 @@ public class TooMuchLoot {
 			LogHelper.warn("Failed to obtain contents field. This mod will now cease to function.", true);
 			e.printStackTrace();
 		}
-
-		FMLCommonHandler.instance().bus().register(instance);
 	}
 
 	@Mod.EventHandler
@@ -112,13 +107,5 @@ public class TooMuchLoot {
 		}
 
 		ConfigHandler.syncLoot();
-	}
-
-	@SubscribeEvent
-	public void onConfigChanged(ConfigChangedEvent.OnConfigChangedEvent event) {
-		if (event.modID.equalsIgnoreCase(ModInfo.ID)) {
-			ConfigHandler.syncMain();
-			ConfigHandler.syncLoot();
-		}
 	}
 }

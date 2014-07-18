@@ -2,12 +2,11 @@ package dmillerw.tml.config;
 
 import com.google.common.collect.Maps;
 import dmillerw.tml.TooMuchLoot;
-import dmillerw.tml.helper.LogHelper;
 import dmillerw.tml.data.ConfigWrapper;
+import dmillerw.tml.helper.LogHelper;
 import net.minecraft.util.WeightedRandomChestContent;
 import net.minecraftforge.common.ChestGenHooks;
-import net.minecraftforge.common.config.Configuration;
-import net.minecraftforge.common.config.Property;
+import net.minecraftforge.common.Configuration;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -24,18 +23,6 @@ public class ConfigHandler {
 	public static Configuration main;
 
 	public static Map<String, Configuration> configMapping;
-
-	public static List<String> getItems(String key) {
-		List<String> list = new ArrayList<String>();
-		list.addAll(configMapping.get(key).getCategoryNames());
-		return list;
-	}
-
-	public static List<Property> getProperties(String key, String item) {
-		List<Property> list = new ArrayList<Property>();
-		list.addAll(configMapping.get(key).getCategory(item).getOrderedValues());
-		return list;
-	}
 
 	public static void initializeMain() {
 		main = new Configuration(configFile);

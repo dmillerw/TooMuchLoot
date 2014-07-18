@@ -10,7 +10,7 @@ public class LogHelper {
 	public static boolean log = true;
 
 	public static void warn(String msg, boolean big) {
-		if (big) FMLLog.bigWarning("[TooMuchLoot]: %s", msg); else FMLLog.warning("[TooMuchLoot]: %s", msg);
+		FMLLog.warning("[TooMuchLoot]: %s", msg);
 	}
 
 	public static void logParse(String file) {

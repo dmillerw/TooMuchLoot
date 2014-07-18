@@ -2,7 +2,6 @@ package dmillerw.tml.data;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import cpw.mods.fml.common.registry.GameData;
 import dmillerw.tml.data.json.LootArrayDeserializer;
 import dmillerw.tml.data.json.NBTDeserializer;
 import dmillerw.tml.helper.LogHelper;
@@ -25,7 +24,7 @@ public class LootLoader {
 
 	public static class SerializedLoot {
 		public String[] category;
-		public String item;
+		public int item;
 		public int damage = 0;
 		public NBTTagCompound nbt = new NBTTagCompound();
 		public int weight;
@@ -56,10 +55,10 @@ public class LootLoader {
 			return;
 		}
 
-		ItemStack stack = new ItemStack(GameData.getItemRegistry().getObject(loot.item), 1, loot.damage);
+		ItemStack stack = new ItemStack(loot.item, 1, loot.damage);
 
 		if (stack.getItem() == null) {
-			LogHelper.warn(String.format("Tried to add %s to the %s category, but couldn't find the item!", loot.item, loot.category), false);
+			LogHelper.warn(String.format("Tried to add item/block #%s to the %s category, but couldn't find the item!", loot.item, loot.category), false);
 			return;
 		}
 
