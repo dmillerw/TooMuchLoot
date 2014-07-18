@@ -1,27 +1,26 @@
 package dmillerw.tml;
 
-import cpw.mods.fml.common.FMLLog;
+import cpw.mods.fml.client.event.ConfigChangedEvent;
+import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerAboutToStartEvent;
-import dmillerw.tml.json.LootDeserielizer;
-import dmillerw.tml.wrapper.ConfigWrapper;
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import dmillerw.tml.config.ConfigHandler;
+import dmillerw.tml.helper.LogHelper;
+import dmillerw.tml.data.LootLoader;
+import dmillerw.tml.lib.ModInfo;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.WeightedRandomChestContent;
 import net.minecraftforge.common.ChestGenHooks;
-import net.minecraftforge.common.Configuration;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @author dmillerw
  */
-@Mod(modid="TML", name="Too Much Loot", version="@VERSION@")
+@Mod(modid= ModInfo.ID, name = ModInfo.NAME, version = ModInfo.VERSION, dependencies = ModInfo.DEPENDENCIES, guiFactory = "dmillerw.tml.client.config.ConfigGUIFactory")
 public class TooMuchLoot {
 
 	public static final String CONFIG_FOLDER = "TooMuchLoot";
@@ -30,31 +29,17 @@ public class TooMuchLoot {
 	public static final String LOOT_FOLDER = "loot";
 
 	public static String[] CHEST_GEN_KEYS = new String[] {
-			ChestGenHooks.MINESHAFT_CORRIDOR,
-			ChestGenHooks.PYRAMID_DESERT_CHEST,
-			ChestGenHooks.PYRAMID_JUNGLE_CHEST,
-			ChestGenHooks.PYRAMID_JUNGLE_DISPENSER,
-			ChestGenHooks.STRONGHOLD_CORRIDOR,
-			ChestGenHooks.STRONGHOLD_LIBRARY,
-			ChestGenHooks.STRONGHOLD_CROSSING,
-			ChestGenHooks.VILLAGE_BLACKSMITH,
-			ChestGenHooks.BONUS_CHEST,
-			ChestGenHooks.DUNGEON_CHEST
+		ChestGenHooks.MINESHAFT_CORRIDOR,
+		ChestGenHooks.PYRAMID_DESERT_CHEST,
+		ChestGenHooks.PYRAMID_JUNGLE_CHEST,
+		ChestGenHooks.PYRAMID_JUNGLE_DISPENSER,
+		ChestGenHooks.STRONGHOLD_CORRIDOR,
+		ChestGenHooks.STRONGHOLD_LIBRARY,
+		ChestGenHooks.STRONGHOLD_CROSSING,
+		ChestGenHooks.VILLAGE_BLACKSMITH,
+		ChestGenHooks.BONUS_CHEST,
+		ChestGenHooks.DUNGEON_CHEST
 	};
-
-	public static String getFormattedKey(String key) {
-		StringBuilder sb = new StringBuilder();
-		sb.append(Character.toUpperCase(key.charAt(0)));
-		for (int i=1; i<key.length(); i++) {
-			sb.append(key.charAt(i));
-			if (i < key.length() - 1) {
-				if (Character.isLowerCase(key.charAt(i)) && Character.isUpperCase(key.charAt(i + 1))) {
-					sb.append(' ');
-				}
-			}
-		}
-		return sb.toString();
-	}
 
 	public static String getFormattedStackString(ItemStack stack) {
 		if (stack == null) {
@@ -63,82 +48,61 @@ public class TooMuchLoot {
 		return stack.getUnlocalizedName() + ";" + stack.getItemDamage();
 	}
 
-	public static void warn(String msg, boolean big) {
-		FMLLog.warning("[TooMuchLoot]: %s", msg);
-	}
-
-	public static void logParse(String file) {
-		if (log) FMLLog.info("[TooMuchLoot]: Parsing %s", file);
-	}
-
-	public static void logAddition(String key, String display) {
-		if (log) FMLLog.info("[TooMuchLoot]: Adding %s to %s", display, key);
-	}
-
-	public static void logModification(String key, String display) {
-		if (log) FMLLog.info("[TooMuchLoot]: %s from %s has been modified", display, key);
-	}
-
-	public static void logRemoval(String key, String display) {
-		if (log) FMLLog.info("[TooMuchLoot]: Removed %s from %s", display, key);
-	}
+	@Mod.Instance(ModInfo.ID)
+	public static TooMuchLoot instance;
 
 	public static File configFolder;
-	public static File configFile;
 	public static File lootFolder;
 
 	public static Field contents;
 
-	public static boolean log = true;
 	public static boolean failed = false;
 
 	@Mod.EventHandler
 	public void preInit(FMLPreInitializationEvent event) {
 		configFolder = new File(event.getModConfigurationDirectory(), CONFIG_FOLDER);
-		configFile = new File(configFolder, CONFIG_FILE);
 		lootFolder = new File(configFolder, LOOT_FOLDER);
 
-		Configuration configuration = new Configuration(configFile);
-		configuration.load();
+		ConfigHandler.configFile = new File(configFolder, CONFIG_FILE);
 
-		log = configuration.get("main", "log", true, "Whether loot removals/modifications/additions should be printed to the console/logged").getBoolean(true);
-
-		if (configuration.hasChanged()) {
-			configuration.save();
-		}
+		ConfigHandler.initializeMain();
+		ConfigHandler.syncMain();
 
 		try {
 			contents = ChestGenHooks.class.getDeclaredField("contents");
 			contents.setAccessible(true);
 		} catch (NoSuchFieldException e) {
 			failed = true;
-			warn("Failed to obtain contents field. This mod will now cease to function.", true);
+			LogHelper.warn("Failed to obtain contents field. This mod will now cease to function.", true);
 			e.printStackTrace();
 		}
+
+		FMLCommonHandler.instance().bus().register(instance);
 	}
 
 	@Mod.EventHandler
 	public void postInit(FMLPostInitializationEvent event) {
-		File loot = new File(configFolder, LOOT_FOLDER);
+		File lootFolder = new File(configFolder, LOOT_FOLDER);
 
-		if (!loot.exists()) {
-			loot.mkdir();
+		if (!lootFolder.exists()) {
+			lootFolder.mkdir();
 		}
 
-		for (File file : loot.listFiles()) {
+		for (File file : lootFolder.listFiles()) {
 			String name = file.getName();
 			if (name.substring(name.lastIndexOf(".") + 1, name.length()).equalsIgnoreCase("json")) {
-				try {
-					logParse(name);
-					LootDeserielizer.SerializedLoot serializedLoot = LootDeserielizer.loadFile(file);
-					if (serializedLoot != null) {
-						LootDeserielizer.loadLoot(serializedLoot);
+				LogHelper.logParse(name);
+				LootLoader.LootArrayWrapper wrapper = LootLoader.loadFile(file);
+
+				if (wrapper != null) {
+					for (LootLoader.SerializedLoot loot : wrapper.loot) {
+						LootLoader.loadLoot(loot);
 					}
-				} catch (FileNotFoundException e) {
-					e.printStackTrace();
 				}
 			}
 		}
+
+		ConfigHandler.initializeLoot();
 	}
 
 	@Mod.EventHandler
@@ -147,58 +111,14 @@ public class TooMuchLoot {
 			return;
 		}
 
-		Configuration legacyConfig = new Configuration(configFile);
-		legacyConfig.load();
+		ConfigHandler.syncLoot();
+	}
 
-		for (String key : CHEST_GEN_KEYS) {
-			File file = new File(configFolder, GEN_FOLDER + "/" + key + ".cfg");
-			boolean legacy = configFile.exists() && !file.exists();
-			ChestGenHooks chestInfo = ChestGenHooks.getInfo(key);
-
-			if (legacy) {
-				FMLLog.info("Restoring " + key + " data from legacy config");
-			}
-
-			Configuration configuration = new Configuration(file);
-			configuration.load();
-
-			List<ConfigWrapper> newGen = new ArrayList<ConfigWrapper>();
-
-			try {
-				List<WeightedRandomChestContent> chestContents = (List<WeightedRandomChestContent>) contents.get(chestInfo);
-				for (WeightedRandomChestContent content : chestContents) {
-					try {
-						boolean defaultValue = true;
-						if (legacy) {
-							defaultValue = legacyConfig.get(key, getFormattedStackString(content.theItemId), true).getBoolean(true);
-						}
-
-						ConfigWrapper wrapper = ConfigWrapper.fromConfig(configuration, chestInfo, content, defaultValue);
-						newGen.add(wrapper);
-					} catch (Exception ex) {
-						warn("Failed to handle a specified loot value. REPORT THIS TO THE MOD AUTHOR ALONG WITH THE STACK TRACE FOUND BELOW!", false);
-						ex.printStackTrace();
-					}
-				}
-			} catch (IllegalAccessException e) {
-				e.printStackTrace();
-			}
-
-			for (ConfigWrapper wrapper : newGen) {
-				chestInfo.removeItem(wrapper.item.theItemId);
-				if (wrapper.enabled) {
-					if (wrapper.modified ) {
-						logModification(key, wrapper.item.theItemId.getDisplayName());
-					}
-					chestInfo.addItem(wrapper.item);
-				} else {
-					logRemoval(key, wrapper.item.theItemId.getDisplayName());
-				}
-			}
-
-			if (configuration.hasChanged()) {
-				configuration.save();
-			}
+	@SubscribeEvent
+	public void onConfigChanged(ConfigChangedEvent.OnConfigChangedEvent event) {
+		if (event.modID.equalsIgnoreCase(ModInfo.ID)) {
+			ConfigHandler.syncMain();
+			ConfigHandler.syncLoot();
 		}
 	}
 }

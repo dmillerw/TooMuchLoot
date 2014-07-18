@@ -1,10 +1,10 @@
-package dmillerw.tml.wrapper;
+package dmillerw.tml.data;
 
 import cpw.mods.fml.common.FMLLog;
 import dmillerw.tml.TooMuchLoot;
 import net.minecraft.util.WeightedRandomChestContent;
 import net.minecraftforge.common.ChestGenHooks;
-import net.minecraftforge.common.Configuration;
+import net.minecraftforge.common.config.Configuration;
 
 /**
  * @author dmillerw
@@ -24,7 +24,7 @@ public class ConfigWrapper {
 		wrapper.item = new WeightedRandomChestContent(content.theItemId, minChance, maxChance, weight);
 
 		if (maxChance - minChance + 1 < 0) {
-			FMLLog.warning(wrapper.item.theItemId.getDisplayName() + " has illegal min/max spawn values!");
+			FMLLog.bigWarning(wrapper.item.theItemId.getDisplayName() + " has illegal min/max spawn values!");
 
 			wrapper.enabled = false;
 			wrapper.item.theMinimumChanceToGenerateItem = 0;

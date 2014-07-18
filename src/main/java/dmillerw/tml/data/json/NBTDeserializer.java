@@ -1,4 +1,4 @@
-package dmillerw.tml.json;
+package dmillerw.tml.data.json;
 
 import com.google.gson.*;
 import net.minecraft.nbt.*;
