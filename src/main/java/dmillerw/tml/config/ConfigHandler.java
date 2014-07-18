@@ -2,7 +2,8 @@ package dmillerw.tml.config;
 
 import com.google.common.collect.Maps;
 import dmillerw.tml.TooMuchLoot;
-import dmillerw.tml.wrapper.ConfigWrapper;
+import dmillerw.tml.helper.LogHelper;
+import dmillerw.tml.data.ConfigWrapper;
 import net.minecraft.util.WeightedRandomChestContent;
 import net.minecraftforge.common.ChestGenHooks;
 import net.minecraftforge.common.config.Configuration;
@@ -42,7 +43,7 @@ public class ConfigHandler {
 	}
 
 	public static void syncMain() {
-		TooMuchLoot.log = main.get("main", "log", true, "Whether loot removals/modifications/additions should be printed to the console/logged").getBoolean(true);
+		LogHelper.log = main.get("main", "log", true, "Whether loot removals/modifications/additions should be printed to the console/logged").getBoolean(true);
 
 		if (main.hasChanged()) {
 			main.save();
@@ -84,11 +85,11 @@ public class ConfigHandler {
 				chestInfo.removeItem(wrapper.item.theItemId);
 				if (wrapper.enabled) {
 					if (wrapper.modified ) {
-						TooMuchLoot.logModification(key, wrapper.item.theItemId.getDisplayName());
+						LogHelper.logModification(key, wrapper.item.theItemId.getDisplayName());
 					}
 					chestInfo.addItem(wrapper.item);
 				} else {
-					TooMuchLoot.logRemoval(key, wrapper.item.theItemId.getDisplayName());
+					LogHelper.logRemoval(key, wrapper.item.theItemId.getDisplayName());
 				}
 			}
 

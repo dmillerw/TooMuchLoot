@@ -2,21 +2,19 @@ package dmillerw.tml;
 
 import cpw.mods.fml.client.event.ConfigChangedEvent;
 import cpw.mods.fml.common.FMLCommonHandler;
-import cpw.mods.fml.common.FMLLog;
 import cpw.mods.fml.common.Mod;
-import cpw.mods.fml.common.ModMetadata;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerAboutToStartEvent;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import dmillerw.tml.config.ConfigHandler;
-import dmillerw.tml.json.LootDeserielizer;
+import dmillerw.tml.helper.LogHelper;
+import dmillerw.tml.data.LootLoader;
 import dmillerw.tml.lib.ModInfo;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.ChestGenHooks;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.lang.reflect.Field;
 
 /**
@@ -50,26 +48,6 @@ public class TooMuchLoot {
 		return stack.getUnlocalizedName() + ";" + stack.getItemDamage();
 	}
 
-	public static void warn(String msg, boolean big) {
-		if (big) FMLLog.bigWarning("[TooMuchLoot]: %s", msg); else FMLLog.warning("[TooMuchLoot]: %s", msg);
-	}
-
-	public static void logParse(String file) {
-		if (log) FMLLog.info("[TooMuchLoot]: Parsing %s", file);
-	}
-
-	public static void logAddition(String key, String display) {
-		if (log) FMLLog.info("[TooMuchLoot]: Adding %s to %s", display, key);
-	}
-
-	public static void logModification(String key, String display) {
-		if (log) FMLLog.info("[TooMuchLoot]: %s from %s has been modified", display, key);
-	}
-
-	public static void logRemoval(String key, String display) {
-		if (log) FMLLog.info("[TooMuchLoot]: Removed %s from %s", display, key);
-	}
-
 	@Mod.Instance(ModInfo.ID)
 	public static TooMuchLoot instance;
 
@@ -78,15 +56,10 @@ public class TooMuchLoot {
 
 	public static Field contents;
 
-	public static boolean log = true;
 	public static boolean failed = false;
 
 	@Mod.EventHandler
 	public void preInit(FMLPreInitializationEvent event) {
-		// MOD METADATA ADJUSTMENT
-		ModMetadata modMetadata = event.getModMetadata();
-		modMetadata.version = ModInfo.VERSION;
-
 		configFolder = new File(event.getModConfigurationDirectory(), CONFIG_FOLDER);
 		lootFolder = new File(configFolder, LOOT_FOLDER);
 
@@ -100,7 +73,7 @@ public class TooMuchLoot {
 			contents.setAccessible(true);
 		} catch (NoSuchFieldException e) {
 			failed = true;
-			warn("Failed to obtain contents field. This mod will now cease to function.", true);
+			LogHelper.warn("Failed to obtain contents field. This mod will now cease to function.", true);
 			e.printStackTrace();
 		}
 
@@ -109,20 +82,22 @@ public class TooMuchLoot {
 
 	@Mod.EventHandler
 	public void postInit(FMLPostInitializationEvent event) {
-		File loot = new File(configFolder, LOOT_FOLDER);
+		File lootFolder = new File(configFolder, LOOT_FOLDER);
 
-		if (!loot.exists()) {
-			loot.mkdir();
+		if (!lootFolder.exists()) {
+			lootFolder.mkdir();
 		}
 
-		for (File file : loot.listFiles()) {
+		for (File file : lootFolder.listFiles()) {
 			String name = file.getName();
 			if (name.substring(name.lastIndexOf(".") + 1, name.length()).equalsIgnoreCase("json")) {
-				try {
-					logParse(name);
-					LootDeserielizer.loadLoot(LootDeserielizer.loadFile(file));
-				} catch (FileNotFoundException e) {
-					e.printStackTrace();
+				LogHelper.logParse(name);
+				LootLoader.LootArrayWrapper wrapper = LootLoader.loadFile(file);
+
+				if (wrapper != null) {
+					for (LootLoader.SerializedLoot loot : wrapper.loot) {
+						LootLoader.loadLoot(loot);
+					}
 				}
 			}
 		}

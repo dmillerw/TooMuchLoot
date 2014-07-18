@@ -1,12 +1,10 @@
-package dmillerw.tml.wrapper;
+package dmillerw.tml.data;
 
 import cpw.mods.fml.common.FMLLog;
 import dmillerw.tml.TooMuchLoot;
 import net.minecraft.util.WeightedRandomChestContent;
 import net.minecraftforge.common.ChestGenHooks;
 import net.minecraftforge.common.config.Configuration;
-
-import java.util.Random;
 
 /**
  * @author dmillerw
