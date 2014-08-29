@@ -42,7 +42,7 @@ public class TooMuchLoot {
 	};
 
 	public static String getFormattedStackString(ItemStack stack) {
-		if (stack == null) {
+		if (stack == null || stack.getItem() == null) {
 			return "null";
 		}
 		return stack.getUnlocalizedName() + ";" + stack.getItemDamage();
