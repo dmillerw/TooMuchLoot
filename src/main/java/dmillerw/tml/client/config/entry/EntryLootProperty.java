@@ -14,25 +14,25 @@ import java.util.List;
  */
 public class EntryLootProperty extends GuiConfigEntries.CategoryEntry {
 
-	public EntryLootProperty(GuiConfig owningScreen, GuiConfigEntries owningEntryList, IConfigElement configElement) {
-		super(owningScreen, owningEntryList, configElement);
-	}
+    public EntryLootProperty(GuiConfig owningScreen, GuiConfigEntries owningEntryList, IConfigElement configElement) {
+        super(owningScreen, owningEntryList, configElement);
+    }
 
-	@Override
-	protected GuiScreen buildChildScreen() {
-		String key = this.configElement.getLanguageKey().split("-")[0];
-		String item = this.configElement.getLanguageKey().split("-")[1];
+    @Override
+    protected GuiScreen buildChildScreen() {
+        String key = this.configElement.getLanguageKey().split("-")[0];
+        String item = this.configElement.getLanguageKey().split("-")[1];
 
-		List<IConfigElement> list = (new ConfigElement(ConfigHandler.configMapping.get(key).getCategory(item)).getChildElements());
+        List<IConfigElement> list = (new ConfigElement(ConfigHandler.configMapping.get(key).getCategory(item)).getChildElements());
 
-		return new GuiConfig(
-				this.owningScreen,
-				list,
-				this.owningScreen.modID,
-				this.configElement.getName(),
-				this.configElement.requiresWorldRestart() || this.owningScreen.allRequireWorldRestart,
-				this.configElement.requiresMcRestart() || this.owningScreen.allRequireMcRestart,
-				this.configElement.getName()
-		);
-	}
+        return new GuiConfig(
+                this.owningScreen,
+                list,
+                this.owningScreen.modID,
+                this.configElement.getName(),
+                this.configElement.requiresWorldRestart() || this.owningScreen.allRequireWorldRestart,
+                this.configElement.requiresMcRestart() || this.owningScreen.allRequireMcRestart,
+                this.configElement.getName()
+        );
+    }
 }

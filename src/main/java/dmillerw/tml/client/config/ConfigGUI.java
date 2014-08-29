@@ -16,14 +16,14 @@ import java.util.List;
  */
 public class ConfigGUI extends GuiConfig {
 
-	private static List<IConfigElement> getConfigElements() {
-		return Arrays.asList(
-			(IConfigElement)new DummyConfigElement.DummyCategoryElement("Main", "Main", EntryMain.class),
-			(IConfigElement)new DummyConfigElement.DummyCategoryElement("Generation", "Generation", EntryGeneration.class)
-		);
-	}
+    private static List<IConfigElement> getConfigElements() {
+        return Arrays.asList(
+                (IConfigElement) new DummyConfigElement.DummyCategoryElement("Main", "Main", EntryMain.class),
+                (IConfigElement) new DummyConfigElement.DummyCategoryElement("Generation", "Generation", EntryGeneration.class)
+        );
+    }
 
-	public ConfigGUI(GuiScreen parentScreen) {
-		super(parentScreen, getConfigElements(), ModInfo.ID, true, false, ModInfo.NAME);
-	}
+    public ConfigGUI(GuiScreen parentScreen) {
+        super(parentScreen, getConfigElements(), ModInfo.ID, true, false, ModInfo.NAME);
+    }
 }

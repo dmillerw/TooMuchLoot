@@ -15,20 +15,20 @@ import java.util.List;
  */
 public class LootArrayDeserializer implements JsonDeserializer<LootLoader.LootArrayWrapper> {
 
-	@Override
-	public LootLoader.LootArrayWrapper deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
-		LootLoader.LootArrayWrapper wrapper = new LootLoader.LootArrayWrapper();
-		List<LootLoader.SerializedLoot> lootList = new ArrayList<LootLoader.SerializedLoot>();
+    @Override
+    public LootLoader.LootArrayWrapper deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+        LootLoader.LootArrayWrapper wrapper = new LootLoader.LootArrayWrapper();
+        List<LootLoader.SerializedLoot> lootList = new ArrayList<LootLoader.SerializedLoot>();
 
-		if (!json.isJsonArray()) {
-			return null; // Figure out how to fire a proper exception here...
-		}
+        if (!json.isJsonArray()) {
+            return null; // Figure out how to fire a proper exception here...
+        }
 
-		for (JsonElement element : json.getAsJsonArray()) {
-			lootList.add(context.<LootLoader.SerializedLoot>deserialize(element, LootLoader.SerializedLoot.class));
-		}
+        for (JsonElement element : json.getAsJsonArray()) {
+            lootList.add(context.<LootLoader.SerializedLoot>deserialize(element, LootLoader.SerializedLoot.class));
+        }
 
-		wrapper.loot = lootList.toArray(new LootLoader.SerializedLoot[lootList.size()]);
-		return wrapper;
-	}
+        wrapper.loot = lootList.toArray(new LootLoader.SerializedLoot[lootList.size()]);
+        return wrapper;
+    }
 }
