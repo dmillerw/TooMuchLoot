@@ -75,7 +75,7 @@ public class ConfigHandler {
                 List<WeightedRandomChestContent> chestContents = (List<WeightedRandomChestContent>) TooMuchLoot.contents.get(chestInfo);
                 for (WeightedRandomChestContent content : chestContents) {
                     ConfigWrapper wrapper = ConfigWrapper.fromConfig(configuration, chestInfo, content, true);
-                    newGen.add(wrapper);
+                    if (wrapper != null) newGen.add(wrapper);
                 }
             } catch (IllegalAccessException e) {
                 e.printStackTrace();

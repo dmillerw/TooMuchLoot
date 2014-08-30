@@ -14,6 +14,11 @@ public class ConfigWrapper {
     public static ConfigWrapper fromConfig(Configuration configuration, ChestGenHooks hook, WeightedRandomChestContent content, boolean legacy) {
         ConfigWrapper wrapper = new ConfigWrapper();
         String key = TooMuchLoot.getFormattedStackString(content.theItemId);
+
+        if (key.equalsIgnoreCase("null")) {
+            return null;
+        }
+
         key = key.replace(".", "_");
 
         configuration.addCustomCategoryComment(key, content.theItemId.getDisplayName());
