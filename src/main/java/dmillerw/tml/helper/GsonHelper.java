@@ -23,18 +23,27 @@ public class GsonHelper {
     }
 
     public static Number parseNumber(char type, JsonPrimitive jsonPrimitive) {
+        String string = jsonPrimitive.getAsString();
+        string = string.substring(0, string.length() - 1);
+
+        // If not a number with support for decimals, trim any that occur
+        if (type == 'b' || type == 'B' || type == 'i' || type == 'I' || type == 's' || type == 'S' || type == 'l' || type == 'L') {
+            if (string.contains("."))
+                string = string.substring(0, string.indexOf("."));
+        }
+
         if (type == 'b' || type == 'B') {
-            return jsonPrimitive.getAsByte();
+            return Byte.parseByte(string);
         } else if (type == 's' || type == 'S') {
-            return jsonPrimitive.getAsShort();
+            return Short.parseShort(string);
         } else if (type == 'i' || type == 'I') {
-            return jsonPrimitive.getAsInt();
+            return Integer.parseInt(string);
         } else if (type == 'f' || type == 'F') {
-            return jsonPrimitive.getAsFloat();
+            return Float.parseFloat(string);
         } else if (type == 'd' || type == 'D') {
-            return jsonPrimitive.getAsDouble();
+            return Double.parseDouble(string);
         } else if (type == 'l' || type == 'L') {
-            return jsonPrimitive.getAsLong();
+            return Long.parseLong(string);
         } else {
             return null;
         }

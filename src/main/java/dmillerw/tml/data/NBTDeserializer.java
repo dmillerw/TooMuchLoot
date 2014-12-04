@@ -84,6 +84,12 @@ public class NBTDeserializer implements JsonDeserializer<NBTTagCompound> {
             } else {
                 return new NBTTagString(primitive.getAsString());
             }
+        } else if (primitive.isNumber()) {
+            if (primitive.getAsString().contains(".")) {
+                return new NBTTagDouble(primitive.getAsDouble());
+            } else {
+                return new NBTTagInt(primitive.getAsInt());
+            }
         } else {
             throw new JsonParseException("Failed to retrieve NBT tag from non-primitive element!");
         }
