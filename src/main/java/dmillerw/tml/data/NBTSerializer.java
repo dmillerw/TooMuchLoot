@@ -25,7 +25,7 @@ public class NBTSerializer implements JsonSerializer<NBTTagCompound> {
             NBTBase tag = src.getTag(key);
             if (NBTHelper.isNumber(tag)) {
                 Number number = NBTHelper.getNumber(tag);
-                jsonObject.addProperty(key + "^" + NBTHelper.getType(number), number);
+                jsonObject.addProperty(key + "^" + NBTHelper.getType(number).charAt(0), number);
             } else if (tag instanceof NBTTagString) {
                 jsonObject.addProperty(key, ((NBTTagString) tag).func_150285_a_());
             } else if (tag instanceof NBTTagList) {
