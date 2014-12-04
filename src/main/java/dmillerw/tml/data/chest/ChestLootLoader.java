@@ -11,6 +11,7 @@ import dmillerw.tml.helper.LogHelper;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.WeightedRandomChestContent;
 import net.minecraftforge.common.ChestGenHooks;
+import org.apache.commons.lang3.ArrayUtils;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -55,12 +56,21 @@ public class ChestLootLoader {
         } catch (Exception ex) {}
     }
 
-    public static void generateFiles(File generationDir) {
+    public static void generateFiles(File generationDir, String ... categories) {
         if (!generationDir.exists()) {
             generationDir.mkdirs();
         }
 
-        for (String key : TooMuchLoot.chestGenCategories) {
+        if (categories == null || categories.length == 0) {
+            categories = TooMuchLoot.chestGenCategories;
+        } else {
+            if (ArrayUtils.contains(TooMuchLoot.chestGenCategories, categories[0])) {
+                // BAAAAAD
+                return;
+            }
+        }
+
+        for (String key : categories) {
             try {
                 File file = new File(generationDir, key + ".json");
                 if (!file.exists())

@@ -44,6 +44,10 @@ public class CommandChestLoot extends CommandBase {
             } else if (args[0].equalsIgnoreCase("reset")) {
                 ChestLootLoader.restoreCachedLootTable();
             }
+        } else if (args.length == 2) {
+            if (args[0].equalsIgnoreCase("generate")) {
+                ChestLootLoader.generateFiles(TooMuchLoot.generatedFolder, args[1]);
+            }
         } else if (args.length == 5) {
             if (args[0].equalsIgnoreCase("spawnDebugChest")) {
                 String tag = args[1];
