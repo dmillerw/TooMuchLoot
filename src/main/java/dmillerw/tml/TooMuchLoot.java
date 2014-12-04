@@ -5,7 +5,6 @@ import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import dmillerw.tml.command.CommandChestLoot;
 import dmillerw.tml.data.chest.ChestLootLoader;
-import dmillerw.tml.handler.WorldHandler;
 import dmillerw.tml.helper.LogHelper;
 import net.minecraftforge.common.ChestGenHooks;
 
@@ -64,8 +63,6 @@ public class TooMuchLoot {
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-
-        WorldHandler.register();
     }
 
     @Mod.EventHandler
@@ -74,7 +71,6 @@ public class TooMuchLoot {
             return;
 
         event.registerServerCommand(new CommandChestLoot());
-
 
         try {
             lootTableCache = ChestLootLoader.copyLootTable(((HashMap<String, ChestGenHooks>) chestInfo.get(ChestGenHooks.class)));

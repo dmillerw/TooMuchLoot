@@ -30,11 +30,7 @@ public class NBTDeserializer implements JsonDeserializer<NBTTagCompound> {
 
     public NBTKeyAndTag getTagFromElement(String key, JsonElement element) {
         if (element.isJsonPrimitive()) {
-            String substring = key;
-            if (!element.getAsJsonPrimitive().isString())
-                substring = key.substring(0, key.lastIndexOf("^"));
-
-            return new NBTKeyAndTag(substring, getTagFromPrimitive(key, element.getAsJsonPrimitive()));
+            return new NBTKeyAndTag(key, getTagFromPrimitive(element.getAsJsonPrimitive()));
         } else if (element.isJsonArray()) {
             NBTTagList nbtTagList = new NBTTagList();
             for (JsonElement jsonElement : element.getAsJsonArray()) {
@@ -52,25 +48,42 @@ public class NBTDeserializer implements JsonDeserializer<NBTTagCompound> {
         }
     }
 
-    public NBTBase getTagFromPrimitive(String key, JsonPrimitive primitive) {
+    public NBTBase getTagFromPrimitive(JsonPrimitive primitive) {
         if (primitive.isBoolean()) {
             return new NBTTagByte((byte) (primitive.getAsBoolean() ? 1 : 0));
-        } else if (primitive.isNumber()) {
-            Number number = GsonHelper.parseNumber(key, primitive);
-            if (number instanceof Byte)
-                return new NBTTagByte(number.byteValue());
-            else if (number instanceof Short)
-                return new NBTTagShort(number.shortValue());
-            else if (number instanceof Integer)
-                return new NBTTagInt(number.intValue());
-            else if (number instanceof Float)
-                return new NBTTagFloat(number.floatValue());
-            else if (number instanceof Double)
-                return new NBTTagDouble(number.doubleValue());
-            else if (number instanceof Long)
-                return new NBTTagLong(number.longValue());
         } else if (primitive.isString()) {
-            return new NBTTagString(primitive.getAsString());
+            String string = primitive.getAsString();
+            boolean properString = false;
+
+            // If it ends with a letter, see if it's a full String, or a number with type
+            if (Character.isAlphabetic(string.charAt(string.length() - 1))) {
+                for (int i=0; i<string.length() - 2; i++) {
+                    char c = string.charAt(i);
+                    if (Character.isAlphabetic(c)) {
+                        properString = true;
+                        break;
+                    }
+                }
+            }
+
+            // We're not a full string, so parse as a number
+            if (!properString) {
+                Number number = GsonHelper.parseNumber(string.charAt(string.length() - 1), primitive);
+                if (number instanceof Byte)
+                    return new NBTTagByte(number.byteValue());
+                else if (number instanceof Short)
+                    return new NBTTagShort(number.shortValue());
+                else if (number instanceof Integer)
+                    return new NBTTagInt(number.intValue());
+                else if (number instanceof Float)
+                    return new NBTTagFloat(number.floatValue());
+                else if (number instanceof Double)
+                    return new NBTTagDouble(number.doubleValue());
+                else if (number instanceof Long)
+                    return new NBTTagLong(number.longValue());
+            } else {
+                return new NBTTagString(primitive.getAsString());
+            }
         } else {
             throw new JsonParseException("Failed to retrieve NBT tag from non-primitive element!");
         }

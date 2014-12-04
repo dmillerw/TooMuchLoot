@@ -22,28 +22,21 @@ public class GsonHelper {
         gson = builder.create();
     }
 
-    public static Number parseNumber(String key, JsonPrimitive jsonPrimitive) {
-        if (key.contains("^")) {
-            String type = key.substring(key.lastIndexOf("^") + 1, key.length());
-            if (type.equalsIgnoreCase("b") || type.equalsIgnoreCase("byte")) {
-                return jsonPrimitive.getAsByte();
-            } else if (type.equalsIgnoreCase("bool") || type.equalsIgnoreCase("boolean")) {
-                return jsonPrimitive.getAsBoolean() ? 1 : 0;
-            } else if (type.equalsIgnoreCase("s") || type.equalsIgnoreCase("short")) {
-                return jsonPrimitive.getAsShort();
-            } else if (type.equalsIgnoreCase("i") || type.equalsIgnoreCase("int") || type.equalsIgnoreCase("integer")) {
-                return jsonPrimitive.getAsInt();
-            } else if (type.equalsIgnoreCase("f") || type.equalsIgnoreCase("float")) {
-                return jsonPrimitive.getAsFloat();
-            } else if (type.equalsIgnoreCase("d") || type.equalsIgnoreCase("double")) {
-                return jsonPrimitive.getAsDouble();
-            } else if (type.equalsIgnoreCase("l") || type.equalsIgnoreCase("long")) {
-                return jsonPrimitive.getAsLong();
-            } else {
-                return null;
-            }
-        } else {
+    public static Number parseNumber(char type, JsonPrimitive jsonPrimitive) {
+        if (type == 'b' || type == 'B') {
+            return jsonPrimitive.getAsByte();
+        } else if (type == 's' || type == 'S') {
+            return jsonPrimitive.getAsShort();
+        } else if (type == 'i' || type == 'I') {
             return jsonPrimitive.getAsInt();
+        } else if (type == 'f' || type == 'F') {
+            return jsonPrimitive.getAsFloat();
+        } else if (type == 'd' || type == 'D') {
+            return jsonPrimitive.getAsDouble();
+        } else if (type == 'l' || type == 'L') {
+            return jsonPrimitive.getAsLong();
+        } else {
+            return null;
         }
     }
 }
