@@ -23,8 +23,21 @@ public class ChestLootItem {
     public int damage = 0;
     public NBTTagCompound nbt = new NBTTagCompound();
     public int weight;
-    public int count_min;
-    public int count_max;
+    public int count_min = -1;
+    public int count_max = -1;
+
+    public ChestLootItem checkCountValues() {
+        if (count_min == -1 && count_max == -1) {
+            count_min = 1;
+            count_max = 1;
+        } else if (count_min == -1) {
+            count_min = count_max;
+        } else if (count_max == -1) {
+            count_max = count_min;
+        }
+
+        return this;
+    }
 
     public ItemStack toItemStack() {
         ItemStack itemStack = new ItemStack(GameData.getItemRegistry().getObject(item), 1, damage);

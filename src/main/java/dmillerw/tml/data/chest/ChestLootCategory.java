@@ -39,6 +39,19 @@ public class ChestLootCategory {
     public int count_max;
     public ChestLootItem[] loot;
 
+    public ChestLootCategory checkCountValues() {
+        if (count_min == -1 && count_max == -1) {
+            count_min = 1;
+            count_max = 1;
+        } else if (count_min == -1) {
+            count_min = count_max;
+        } else if (count_max == -1) {
+            count_max = count_min;
+        }
+
+        return this;
+    }
+
     public ChestGenHooks toChestGenHooks() {
         WeightedRandomChestContent[] chestContents = new WeightedRandomChestContent[loot.length];
         for (int i=0; i<loot.length; i++) {

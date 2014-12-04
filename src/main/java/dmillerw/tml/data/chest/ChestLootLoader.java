@@ -91,7 +91,11 @@ public class ChestLootLoader {
             LogHelper.logParse(file.getName());
 
             try {
-                ChestLootCategory lootCategory = GsonHelper.gson.fromJson(new String(Files.readAllBytes(Paths.get(file.getAbsolutePath())), Charset.defaultCharset()), ChestLootCategory.class);
+                ChestLootCategory lootCategory = GsonHelper.gson.fromJson(new String(Files.readAllBytes(Paths.get(file.getAbsolutePath())), Charset.defaultCharset()), ChestLootCategory.class).checkCountValues();
+                for (ChestLootItem chestLootItem : lootCategory.loot) {
+                    chestLootItem.checkCountValues();
+                }
+
                 if (lootCategory.loading_mode == LootLoadingMode.OVERRIDE) {
                     if (!tempMap.containsKey(lootCategory.category)) {
                         LogHelper.logOverride(lootCategory.category);
