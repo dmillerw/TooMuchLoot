@@ -9,6 +9,7 @@ import dmillerw.tml.helper.LogHelper;
 import net.minecraftforge.common.ChestGenHooks;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Set;
@@ -84,6 +85,17 @@ public class TooMuchLoot {
 
         if (!lootFolder.exists()) {
             lootFolder.mkdirs();
+        }
+
+        // If loot folder is empty, and doesn't have generated folder, generate
+        // vanilla example files
+        if (lootFolder.listFiles().length <= 0) {
+            ChestLootLoader.generateFiles(generatedFolder, chestGenCategories);
+            try {
+                File hiddenFlag = new File(generatedFolder, ".firstrun.hidden");
+                hiddenFlag.setReadOnly();
+                hiddenFlag.createNewFile();
+            } catch (IOException ex) {}
         }
 
         // Load loot
